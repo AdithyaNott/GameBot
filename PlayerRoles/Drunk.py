@@ -1,5 +1,6 @@
 from PlayerRoles import RoleCard
 from Constants import Faction
+from Player import Player
 
 """This is the standard Drunk role in Village Faction which implements the RoleCard interface."""
 
@@ -17,7 +18,14 @@ class Drunk(RoleCard):
                            "Village faction, the Drunk's goal is to make sure a werewolf dies during the voting phase. "
         self.loses_to_tanner = True
 
-    # To be implemented
+    # This action will be swapping the Player's current role with 1 from the middle (chosen by the Player).
 
-    def do_night_action(self):
-        pass
+    def do_night_action(self, player, player_list, middle_cards):
+        # Some user input over here to decide which middle card to take. Basically index within
+        # middle_cards array
+        if not isinstance(player, Player):
+            raise Exception("Error: A person who drew the Drunk role is not identified as of Player class.")
+        middle_role = 0  # can also be 1 or 2 since 3 middle roles are present.
+        new_middle_role = player.get_current_role()
+        player.set_current_role(middle_cards[middle_role])
+        middle_cards[middle_role] = new_middle_role

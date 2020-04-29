@@ -38,6 +38,6 @@ class RoleCard:
     # I am still figuring out how to design this, but I feel like this method would take in array of the players in
     # the order they're sitting. Maybe another Player class which has discord tag, Discord nickname, starting role,
     # and current role
-    def do_night_action(self):
-        pass
 
+    def do_night_action(self, player, player_list, middle_cards):
+        pass

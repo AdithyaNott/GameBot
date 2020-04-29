@@ -13,6 +13,7 @@ class Tanner(RoleCard):
         self.faction = Faction.NEUTRAL
         self.name = "Tanner"
         self.description = "Tanner does not wake up during the night phase and has no special actions. \nTanner " \
-                           "is neutral, and Tanner wins if Tanner himself is killed during the voting phase. If " \
-                           "Tanner dies, all members of the Village faction and Werewolf faction lose. "
+                           "is technically part of the Village faction but is neutral, and Tanner wins " \
+                           "only if Tanner himself is killed during the voting phase. If " \
+                           "Tanner dies, all members of Werewolf faction lose. "
         self.loses_to_tanner = False
