@@ -5,17 +5,17 @@ import random
 # List of roles that are currently supported by the Werewolf Bot.
 # Might be useful to use this list to prompt the user for which roles to use in the game based
 # on some reaction~ish input.
-possible_roles = ["Drunk", "Hunter", "Insomniac", "Mason", "Minion",
+POSSIBLE_ROLES = ["Drunk", "Hunter", "Insomniac", "Mason", "Minion",
                   "Robber", "Seer", "Tanner", "Troublemaker", "Villager", "Werewolf"]
 
 # This contains the list of roles for which there can be more than 1 present in the game.
 # Villager (for which there are at most 3)
 # Werewolf (for which there are at most 2)
 # Mason (for which there are exactly 2 or 0)
-special_roles_for_count = ["Mason", "Villager", "Werewolf"]
+SPECIAL_ROLES_FOR_COUNT = ["Mason", "Villager", "Werewolf"]
 
 # Priority of order for night actions for each role (assuming they have a night role)
-priority = ["Werewolf", "Minion", "Mason", "Seer", "Robber", "Troublemaker", "Drunk", "Insomniac"]
+PRIORITY = ["Werewolf", "Minion", "Mason", "Seer", "Robber", "Troublemaker", "Drunk", "Insomniac"]
 
 # This is probably the roles they input they want. Below is an example I just have for now
 roles_input = ["Werewolf", "Werewolf", "Seer", "Troublemaker", "Robber", "Tanner"]
@@ -44,9 +44,9 @@ if player_count < 3:
 # which is described above by special_roles_for_count
 role_count = Counter(roles_input)
 for role in role_count.keys():
-    if role not in possible_roles:
+    if role not in POSSIBLE_ROLES:
         raise Exception("{} role is currently not supported by our bot".format(role))
-    if role_count[role] > 1 and role not in special_roles_for_count:
+    if role_count[role] > 1 and role not in SPECIAL_ROLES_FOR_COUNT:
         raise Exception("There can only be at most 1 {} role".format(role))
 if role_count["Mason"] != 0 and role_count["Mason"] != 2:
     raise Exception("There can only be exactly 0 or 2 Mason roles")
@@ -91,7 +91,7 @@ for card in middle_cards:
     middle_roles.append(middle_role)
 
 # Now to code each person doing their one night action
-for role in priority:
+for role in PRIORITY:
     if role in starting_roles:
         for player in player_list:
             if player.get_start_role().get_role_name() == role:
