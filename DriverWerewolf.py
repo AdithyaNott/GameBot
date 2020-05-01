@@ -1,21 +1,8 @@
 from Player import Player
 from collections import Counter
+import Constants
 import random
-
-# List of roles that are currently supported by the Werewolf Bot.
-# Might be useful to use this list to prompt the user for which roles to use in the game based
-# on some reaction~ish input.
-POSSIBLE_ROLES = ["Drunk", "Hunter", "Insomniac", "Mason", "Minion",
-                  "Robber", "Seer", "Tanner", "Troublemaker", "Villager", "Werewolf"]
-
-# This contains the list of roles for which there can be more than 1 present in the game.
-# Villager (for which there are at most 3)
-# Werewolf (for which there are at most 2)
-# Mason (for which there are exactly 2 or 0)
-SPECIAL_ROLES_FOR_COUNT = ["Mason", "Villager", "Werewolf"]
-
-# Priority of order for night actions for each role (assuming they have a night role)
-PRIORITY = ["Werewolf", "Minion", "Mason", "Seer", "Robber", "Troublemaker", "Drunk", "Insomniac"]
+from PlayerRoles import Drunk, Hunter, Insomniac, Mason, Minion, Robber, Seer, Tanner, Troublemaker, Villager, Werewolf
 
 # This is probably the roles they input they want. Below is an example I just have for now
 roles_input = ["Werewolf", "Werewolf", "Seer", "Troublemaker", "Robber", "Tanner"]
@@ -44,9 +31,9 @@ if player_count < 3:
 # which is described above by special_roles_for_count
 role_count = Counter(roles_input)
 for role in role_count.keys():
-    if role not in POSSIBLE_ROLES:
+    if role not in Constants.POSSIBLE_ROLES:
         raise Exception("{} role is currently not supported by our bot".format(role))
-    if role_count[role] > 1 and role not in SPECIAL_ROLES_FOR_COUNT:
+    if role_count[role] > 1 and role not in Constants.SPECIAL_ROLES_MULTIPLE_COUNT:
         raise Exception("There can only be at most 1 {} role".format(role))
 if role_count["Mason"] != 0 and role_count["Mason"] != 2:
     raise Exception("There can only be exactly 0 or 2 Mason roles")
@@ -55,9 +42,10 @@ if role_count["Villager"] > 3:
 if role_count["Werewolf"] > 2:
     raise Exception("There can only be at most 2 Werewolf roles")
 
-# Shuffle the roles for randomization
+# Shuffle the roles for randomization (which will accordingly then be distributed)
 random.shuffle(roles_input)
 
+# Boolean to see if there is a Tanner in the game.
 tanner_check = "Tanner" in roles_input
 
 # Initializing the players classes for everyone. Will contain discord tag, name, game, and starting role in that order.
@@ -74,8 +62,7 @@ for i in range(player_count):
     if tanner_check:
         start_role.update_description_tanner_clause()
 
-    player_list.append(Player(discord_tags[i], discord_names[i], "One Night Ultimate Werewolf", start_role,
-                              start_role))
+    player_list.append(Player(discord_tags[i], discord_names[i], "One Night Ultimate Werewolf", start_role))
 
 # There should be some code here to message all the individual players about their role now, and the
 # description and such.
@@ -91,9 +78,8 @@ for card in middle_cards:
     middle_roles.append(middle_role)
 
 # Now to code each person doing their one night action
-for role in PRIORITY:
+for role in Constants.PRIORITY:
     if role in starting_roles:
         for player in player_list:
             if player.get_start_role().get_role_name() == role:
                 player.get_start_role().do_night_action(player, player_list, middle_roles)
-
