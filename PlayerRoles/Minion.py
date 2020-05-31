@@ -39,4 +39,5 @@ class Minion(RoleCard):
         else:
             # Well now there were no werewolves, so minion needs to just not die
             print("You wake up as minion during the night... You see that there are no werewolves!!")
-            print("Your new objective is to avoid dying (unless someone else magically becomes a werewolf)")
+            print("So now you are a Werewolf!")
+            print("Your new objective is to avoid dying.")
