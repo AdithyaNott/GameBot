@@ -34,10 +34,37 @@ class HelperMethods:
 
     # Swaps the current_role attributes for 2 Players.
     @staticmethod
-    def swap_roles(self, player_one, player_two):
+    def swap_roles(player_one, player_two):
         if not isinstance(player_one, Player) or not isinstance(player_two, Player):
             raise Exception("One of the Players passed in for swapping isn't of Player class")
         swapped_role = player_one.current_role
         player_one.set_current_role(player_two.current_role)
         player_two.set_current_role(swapped_role)
         return player_one, player_two
+
+    # Converts dictionary to list version, where each (k,v) in the dict is the element and number of times
+    # it would appear in the list respectively.
+    @staticmethod
+    def convert_dict_to_list(role_dict):
+        role_list = []
+        for i in role_dict.keys():
+            for j in range(role_dict[i]):
+                role_list.append(i)
+        return role_list
+
+    # Gets a list of players who have reacted with '👍' to a message by the bot asking who's playing
+    @staticmethod
+    async def get_players(message, user):
+        player_list = []
+
+        #for reaction in message.reactions:
+        #    if reaction == "👍":
+        #        async for player in reaction.users():
+        #            player_list.append(player)
+        for r in range(len(message.reactions)):
+            if str(message.reactions[r]) == "👍":
+                players = await message.reactions[r].users().flatten()
+                for p in players:
+                    if p != user:
+                        player_list.append(p)
+                return player_list

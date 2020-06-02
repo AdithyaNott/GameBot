@@ -29,5 +29,5 @@ class Troublemaker(RoleCard):
         player_one = other_players[0]
         player_two = other_players[1]
         helper = HelperMethods()
-        helper.swap_roles(self, player_one=player_one, player_two=player_two)
+        helper.swap_roles(player_one=player_one, player_two=player_two)
         print("You've swapped the roles of {} and {}".format(player_one.get_player_name(), player_two.get_player_name()))

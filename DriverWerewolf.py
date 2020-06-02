@@ -8,7 +8,6 @@ from PlayerRoles.Insomniac import Insomniac
 from PlayerRoles.Mason import Mason
 from PlayerRoles.Minion import Minion
 from PlayerRoles.Robber import Robber
-from PlayerRoles.RoleCard import RoleCard
 from PlayerRoles.Seer import Seer
 from PlayerRoles.Tanner import Tanner
 from PlayerRoles.Troublemaker import Troublemaker
@@ -171,9 +170,9 @@ def getClass(role_string):
     elif role_string == "Werewolf":
         return Werewolf()
 
-def main():
+def main(roles_list):
     # This is probably the roles they input they want. Below is an example I just have for now
-    roles_input = ["Werewolf", "Werewolf", "Seer", "Troublemaker", "Robber", "Tanner"]
+    roles_input = roles_list
 
     # Let's assume that the following are the list of discord tags and discord nicknames respectively.
     discord_tags = ["PlayerOne#4643", "PlayerTwo#5864", "PlayerThree#8462"]
@@ -243,7 +242,6 @@ def main():
     votes = [[player_list[1], player_list[0]]]
     killed_players = get_killed_players(votes)
 
-    werewolf_died = False
     result_message = ""
     if len(killed_players) == 0:
         result_message = "After the night phase, it seems that everyone voted for the center....."

@@ -29,7 +29,7 @@ class Robber(RoleCard):
         # Swap the roles of the 2 players
         chosen_player = other_players[0]
         helper = HelperMethods()
-        helper.swap_roles(self, player_one=chosen_player, player_two=player)
+        helper.swap_roles(player_one=chosen_player, player_two=player)
 
         # And now the Robber is informed of their new role
         print("You now look at your new role.... and you see that you have drawn the role of", player.get_current_role().get_role_name())
