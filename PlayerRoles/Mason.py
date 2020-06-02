@@ -1,4 +1,4 @@
-from PlayerRoles import RoleCard
+from PlayerRoles.RoleCard import RoleCard
 from Constants import Faction
 from Player import Player
 

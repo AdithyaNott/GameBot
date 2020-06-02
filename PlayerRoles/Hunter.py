@@ -1,4 +1,4 @@
-from PlayerRoles import RoleCard
+from PlayerRoles.RoleCard import RoleCard
 from Constants import Faction
 
 """This is the standard Hunter role in Village Faction which implements the RoleCard interface."""

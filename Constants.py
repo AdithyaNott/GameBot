@@ -16,6 +16,9 @@ SPECIAL_ROLES_MULTIPLE_COUNT = ["Mason", "Villager", "Werewolf"]
 # Priority of order for night actions for each role (assuming they have a night role)
 PRIORITY = ["Werewolf", "Minion", "Mason", "Seer", "Robber", "Troublemaker", "Drunk", "Insomniac"]
 
+ONUWSTRINGS = ["werewolf", "werewolves", "onuw"]
+
+
 # This is an enum for the Faction which is used by the various classes implementing the RoleCard interface
 
 
@@ -30,7 +33,7 @@ class Faction(Enum):
 class HelperMethods:
 
     # Swaps the current_role attributes for 2 Players.
-
+    @staticmethod
     def swap_roles(self, player_one, player_two):
         if not isinstance(player_one, Player) or not isinstance(player_two, Player):
             raise Exception("One of the Players passed in for swapping isn't of Player class")
