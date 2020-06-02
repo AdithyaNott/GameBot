@@ -2,7 +2,7 @@ import discord
 import Constants
 import DriverWerewolf
 
-DISCORD_TOKEN = "NzE3MjAwNTU1MzIzNDI0ODk4.XtW3IQ.lW0f4GmkQVBlldp4GhRhIG4EkZE"
+DISCORD_TOKEN = ""
 
 client = discord.Client()
 
