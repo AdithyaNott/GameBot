@@ -69,7 +69,7 @@ def check_for_tanner(roles):
 # Code for checking if the starting minion might be a werewolf
 # Input: 2 booleans containing whether a minion is in the game and werewolf is in the game
 # Output: boolean of whether minion acts as werewolf (if there is a minion but no werewolf in starting roles
-def minion_is_werewolf(minion, werewolf):
+def check_minion_is_werewolf(minion, werewolf):
     return minion and not werewolf
 
 
@@ -214,7 +214,7 @@ def main(roles_list):
         player_list.append(Player(discord_tags[i], discord_names[i], "One Night Ultimate Werewolf", start_role))
 
     # Calculate whether the minion starting out is a werewolf (aka has to avoid being killed by village)
-    minion_is_werewolf = minion_is_werewolf(minion_check, werewolf_check)
+    minion_is_werewolf = check_minion_is_werewolf(minion_check, werewolf_check)
 
 
     # There should be some code here to message all the individual players about their role now, and the
