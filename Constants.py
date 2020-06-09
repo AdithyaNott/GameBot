@@ -1,5 +1,6 @@
 from enum import Enum
 from Player import Player
+import time
 
 # List of roles that are currently supported by the Werewolf Bot.
 # Might be useful to use this list to prompt the user for which roles to use in the game based
@@ -32,13 +33,35 @@ class Faction(Enum):
 
 class HelperMethods:
 
+    # This is a method to simulate a countdown via Discord message being edited.
+    # t = time to countdown from. ctx = Discord Context.
+    @staticmethod
+    async def countdown(t, ctx):
+        if t < 0:
+            await ctx.send("Can't have negative amount of time. ")
+            return
+        mins, secs = divmod(t, 60)
+        timeformat = '{:02d}:{:02d}'.format(mins, secs)
+        msg = await ctx.send("Time remaining: " + timeformat)
+        time.sleep(1)
+        t -= 1
+        while t>0:
+            mins, secs = divmod(t, 60)
+            timeformat = '{:02d}:{:02d}'.format(mins, secs)
+            await msg.edit(content=("Time remaining: " + timeformat))
+            time.sleep(1)
+            t -= 1
+        if t == 0:
+            msg.edit(content="Time's up!")
+
     # Swaps the current_role attributes for 2 Players.
+    # Input: player_one and player_two are two instances of the Player Object
     @staticmethod
     def swap_roles(player_one, player_two):
         if not isinstance(player_one, Player) or not isinstance(player_two, Player):
             raise Exception("One of the Players passed in for swapping isn't of Player class")
-        swapped_role = player_one.current_role
-        player_one.set_current_role(player_two.current_role)
+        swapped_role = player_one.get_current_role()
+        player_one.set_current_role(player_two.get_current_role())
         player_two.set_current_role(swapped_role)
         return player_one, player_two
 
@@ -53,6 +76,7 @@ class HelperMethods:
         return role_list
 
     # Gets a list of players who have reacted with '👍' to a message by the bot asking who's playing
+    # Input is message of type Message in the Discordpy API, and user of type User based on the same API.
     @staticmethod
     async def get_players(message, user):
         player_list = []

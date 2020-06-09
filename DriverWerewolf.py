@@ -1,6 +1,7 @@
 from Player import Player
 from collections import Counter
 import Constants
+import discord
 import random
 from PlayerRoles.Drunk import Drunk
 from PlayerRoles.Hunter import Hunter
@@ -15,23 +16,20 @@ from PlayerRoles.Villager import Villager
 from PlayerRoles.Werewolf import Werewolf
 
 
+async def sendErrorMessage(client, msg):
+    await client.sendMessage(msg)
 
 # Code to verify that Discord tags and Discord names are read correctly, and sizes of input are functional for game
 # Input: roles = list of the roles used. ex: ["Werewolf", "Minion", "Villager"]
-# Input: tags = list of discord tags. ex: ["AnimeFan#2584", "Brock#6191"]
-# Input: names = names of the users respectively in the guild. ex: ["Seth", "Brock"]
+# Input: user_list = the list of players for the game
 # Output: count = number of players in the game
-def validate_player_role_sizes(roles, tags, names):
+def validate_player_role_sizes(roles, user_list):
     # Validation check to see that the length of tags == length of names which it should be since this is automatically
     # picked up via discord.py
-    if len(tags) != len(names):
-        raise Exception("Error in getting the names/tags of Discord users. There is unequal length between number "
-                        "of names and number of discord tags")
-
-    count = len(tags)
+    count = len(user_list)
 
     # Validation check that there are 3 more roles than there are players
-    if len(roles) != len(tags) + 3:
+    if len(roles) != count + 3:
         raise Exception("Error in number of roles. There should be 3 more roles than there are players.")
 
     # Need to verify that there are at least 3 players for a functional game.
@@ -170,17 +168,15 @@ def getClass(role_string):
     elif role_string == "Werewolf":
         return Werewolf()
 
-def main(roles_list):
+
+async def main(bot, roles_list, users):
     # This is probably the roles they input they want. Below is an example I just have for now
     roles_input = roles_list
 
     # Let's assume that the following are the list of discord tags and discord nicknames respectively.
-    discord_tags = ["PlayerOne#4643", "PlayerTwo#5864", "PlayerThree#8462"]
-    discord_names = ["PogU", "weirdChamp", "coronaS"]
 
-    player_count = validate_player_role_sizes(roles_input, discord_tags, discord_names)
+    player_count = validate_player_role_sizes(roles_input, users)
     verify_role_counts(roles_input)
-
 
     # Shuffle the roles for randomization (which will accordingly then be distributed)
     random.shuffle(roles_input)
@@ -188,7 +184,8 @@ def main(roles_list):
     # Boolean to see if there is a Tanner in the game.
     tanner_check = check_for_tanner(roles_input)
 
-    # Initializing the players classes for everyone. Will contain discord tag, name, game, and starting role in that order.
+    # Initializing the players classes for everyone. Will contain discord tag, name, game,
+    # and starting role in that order.
     # Important Note: For the Player Class, we expect that the start role is a class type (ex: Drunk() instance), but
     # current role will be saved as a string as that makes it easier to swap.
     player_list = []
@@ -211,14 +208,16 @@ def main(roles_list):
             else:
                 werewolf_check = True
 
-        player_list.append(Player(discord_tags[i], discord_names[i], "One Night Ultimate Werewolf", start_role))
+        player_list.append(Player(users[i], "One Night Ultimate Werewolf", start_role))
 
     # Calculate whether the minion starting out is a werewolf (aka has to avoid being killed by village)
     minion_is_werewolf = check_minion_is_werewolf(minion_check, werewolf_check)
 
-
     # There should be some code here to message all the individual players about their role now, and the
     # description and such.
+
+    for p in player_list:
+        await bot.send_message(p.get_user(), "Some stuff")
 
     # Storing the middle classes/roles (there will be 3 exactly)
     middle_cards = roles_input[-3:].copy()

@@ -8,11 +8,17 @@ DISCORD_TOKEN = ""
 
 client = commands.Bot(command_prefix='&')
 
+# When you play a game
 @client.command()
 async def playgame(ctx, *args):
+
+    def startgamecheck(m):
+        return m.content.strip().startswith("Start")
+
+    # If the command is just &playgame, then showing which games we support
     if len(args) == 0:
         await ctx.send("Currently I only support One Night Ultimate Werewolf. To play One Night "
-                       "Ultimate Werewolf, use !playgame onuw or !playgame werewolf")
+                       "Ultimate Werewolf, use &playgame onuw or &playgame werewolf")
     elif len(args) > 0 and args[0] in Constants.ONUWSTRINGS:
         await ctx.send("Now playing One Night Ultimate Werewolf.")
         reaction_string = "**Roles - One Night Ultimate Werewolf:** The following roles are currently supported " \
@@ -33,28 +39,36 @@ async def playgame(ctx, *args):
         reaction_string += "🧠: ""Seer""\n"
         reaction_string += "😐: ""Tanner""\n"
         reaction_string += "😲: ""Troublemaker""\n"
-        await ctx.send(reaction_string)
+        reaction_id = (await ctx.send(reaction_string)).id
         player_string = "**Players - One Night Ultimate Werewolf:** React with 👍 if you wish to play."
-        await ctx.send(player_string)
-        await ctx.send("Type &startgame to start the game once you've selected your roles")
+        player_id = (await ctx.send(player_string)).id
+        await ctx.send("""Type "Start" to start the game once you've selected your roles""")
+        try:
+            await client.wait_for('message', timeout=120.0, check=startgamecheck)
+        except asyncio.TimeoutError:
+            await ctx.send("Game timed out, try creating game again")
+            return
+        else:
+            await ctx.send("Reached here")
+            try:
+                player_msg = await ctx.fetch_message(player_id)
+            except Exception:
+                await ctx.send("Can't find the message for getting list of players. Closing game")
+                return
+            players = await Constants.HelperMethods.get_players(player_msg, client.user)
+            try:
+                reaction_msg = await ctx.fetch_message(reaction_id)
+            except Exception:
+                await ctx.send("Can't find the message for getting list of roles. Closing game.")
+                return
+            role_dict = DriverWerewolf.getRoleCounts(reaction_msg.reactions)
+            role_list = Constants.HelperMethods.convert_dict_to_list(role_dict)
+            await ctx.send(str(role_list))
+            await ctx.send(str(players))
+            await Constants.HelperMethods.countdown(300, ctx)
     elif len(args) > 0 and str(args[0]).lower() == "help":
         await ctx.send("Use &playgame to learn which games are supported")
 
-
-@client.command()
-async def startgame(ctx):
-    async for msg in ctx.message.channel.history(limit=5):
-        if msg.author == client.user and msg.content.startswith("**Players - One Night Ultimate Werewolf"):
-            players = await Constants.HelperMethods.get_players(msg, client.user)
-            # players = [p.display_name for p in players]
-            await ctx.send(players)
-        if msg.author == client.user and msg.content.startswith("**Roles - One Night Ultimate Werewolf"):
-            role_dict = DriverWerewolf.getRoleCounts(msg.reactions)
-            await ctx.send(str(role_dict))
-            role_list = Constants.HelperMethods.convert_dict_to_list(role_dict)
-            await ctx.send(str(role_list))
-            # DriverWerewolf.main(roles_list=role_list)
-            break
 
 @client.command()
 async def helpgame(ctx):

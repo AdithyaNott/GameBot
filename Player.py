@@ -6,9 +6,10 @@ class Player:
     # Constructor for Player class. Takes in discord_tag, discord_name, name of game and other args if required
     # like starting/current role for instance
 
-    def __init__(self, discord_tag, discord_name, *args):
-        self.discord_tag = discord_tag
-        self.discord_name = discord_name
+    def __init__(self, user, *args):
+        self.user = user
+        self.discord_tag = str(user)
+        self.discord_name = user.display_name
 
         if len(args) < 1:
             raise Exception("There need to be at least 2 arguments for type of game and role in game")
@@ -16,6 +17,9 @@ class Player:
         if len(args) > 1:
             self.starting_role = args[1]
             self.current_role = args[1]
+
+    def get_user(self):
+        return self.user
 
     def get_player_tag(self):
         return self.discord_tag
