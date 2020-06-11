@@ -24,9 +24,12 @@ ONUWSTRINGS = ["werewolf", "werewolves", "onuw"]
 
 
 class Faction(Enum):
-    VILLAGE = 1
-    WEREWOLF = 2
-    NEUTRAL = 3
+    VILLAGE = 0
+    WEREWOLF = 1
+    NEUTRAL = 2
+
+
+WEREWOLF_FACTION_LIST = ["Village", "Werewolf", "Neutral"]
 
 # This is a class for containing helper methods which will be used a lot
 
@@ -38,8 +41,7 @@ class HelperMethods:
     @staticmethod
     async def countdown(t, ctx):
         if t < 0:
-            await ctx.send("Can't have negative amount of time. ")
-            return
+            raise Exception("Can't have negative amount of time. ")
         mins, secs = divmod(t, 60)
         timeformat = '{:02d}:{:02d}'.format(mins, secs)
         msg = await ctx.send("Time remaining: " + timeformat)
@@ -92,3 +94,7 @@ class HelperMethods:
                     if p != user:
                         player_list.append(p)
                 return player_list
+
+    @staticmethod
+    def thumbs_up_check(reaction, user):
+        return str(reaction.emoji) == '👍'

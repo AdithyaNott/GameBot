@@ -2,6 +2,7 @@ from Player import Player
 from collections import Counter
 import Constants
 import discord
+import asyncio
 import random
 from PlayerRoles.Drunk import Drunk
 from PlayerRoles.Hunter import Hunter
@@ -16,9 +17,6 @@ from PlayerRoles.Villager import Villager
 from PlayerRoles.Werewolf import Werewolf
 
 
-async def sendErrorMessage(client, msg):
-    await client.sendMessage(msg)
-
 # Code to verify that Discord tags and Discord names are read correctly, and sizes of input are functional for game
 # Input: roles = list of the roles used. ex: ["Werewolf", "Minion", "Villager"]
 # Input: user_list = the list of players for the game
@@ -28,13 +26,16 @@ def validate_player_role_sizes(roles, user_list):
     # picked up via discord.py
     count = len(user_list)
 
+    # Need to verify that there are at least 3 players for a functional game.
+    # Commenting out the below code for now, should uncomment later.
+    #if count < 3:
+    #    raise Exception("Error. Need at least 3 players to play Werewolves.")
+
     # Validation check that there are 3 more roles than there are players
     if len(roles) != count + 3:
-        raise Exception("Error in number of roles. There should be 3 more roles than there are players.")
+        raise Exception("Error in number of roles. There should be 3 more roles than there are players "
+                        "(1 role per player and 3 roles in the middle).")
 
-    # Need to verify that there are at least 3 players for a functional game.
-    if count < 3:
-        raise Exception("Error. Need at least 3 players to play Werewolves.")
     return count
 
 
@@ -169,13 +170,14 @@ def getClass(role_string):
         return Werewolf()
 
 
-async def main(bot, roles_list, users):
+async def main(bot, roles_list, users, client):
     # This is probably the roles they input they want. Below is an example I just have for now
     roles_input = roles_list
 
     # Let's assume that the following are the list of discord tags and discord nicknames respectively.
 
     player_count = validate_player_role_sizes(roles_input, users)
+
     verify_role_counts(roles_input)
 
     # Shuffle the roles for randomization (which will accordingly then be distributed)
@@ -183,6 +185,8 @@ async def main(bot, roles_list, users):
 
     # Boolean to see if there is a Tanner in the game.
     tanner_check = check_for_tanner(roles_input)
+
+    await bot.send("Now sending the role information to each player in their dms, one at a time.")
 
     # Initializing the players classes for everyone. Will contain discord tag, name, game,
     # and starting role in that order.
@@ -216,8 +220,23 @@ async def main(bot, roles_list, users):
     # There should be some code here to message all the individual players about their role now, and the
     # description and such.
 
+    accepted_count = 0
+
     for p in player_list:
-        await bot.send_message(p.get_user(), "Some stuff")
+        role_msg = await p.get_user().send("Your Role: " + p.get_start_role().get_role_name() + "\n" + "Description: " +
+                                           p.get_start_role().get_description() + "\n" + "Faction: " +
+                                           Constants.WEREWOLF_FACTION_LIST[p.get_start_role().get_faction().value]
+                                           + "\nReact with 👍 to continue.")
+        await role_msg.add_reaction("👍")
+        if p is not player_list[-1]:
+            await p.get_user().send("Waiting for other people to accept their roles")
+
+    #TODO: make sure this code runs only when everyone has accepted their role via reaction
+
+    await bot.send("All players have accepted their starting role.")
+
+    if len(player_list) == 1:
+        return
 
     # Storing the middle classes/roles (there will be 3 exactly)
     middle_cards = roles_input[-3:].copy()
@@ -236,6 +255,7 @@ async def main(bot, roles_list, users):
                     player.get_start_role().do_night_action(player, player_list, middle_roles)
 
     # Some code here to set a timer for 5 minutes after each person doing action
+    await Constants.HelperMethods.countdown(300, bot)
 
     # Now we need to handle the voting phase. Probably a list of tuples for each vote of type (Player, Player)
     votes = [[player_list[1], player_list[0]]]

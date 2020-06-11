@@ -9,7 +9,7 @@ class Player:
     def __init__(self, user, *args):
         self.user = user
         self.discord_tag = str(user)
-        self.discord_name = user.display_name
+        self.discord_name = str(user.display_name)
 
         if len(args) < 1:
             raise Exception("There need to be at least 2 arguments for type of game and role in game")

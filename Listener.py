@@ -21,6 +21,8 @@ async def playgame(ctx, *args):
                        "Ultimate Werewolf, use &playgame onuw or &playgame werewolf")
     elif len(args) > 0 and args[0] in Constants.ONUWSTRINGS:
         await ctx.send("Now playing One Night Ultimate Werewolf.")
+
+        #TODO: make this neater
         reaction_string = "**Roles - One Night Ultimate Werewolf:** The following roles are currently supported " \
                           "supported by our bot. "
         reaction_string += "React wth the roles you would wish to use: \n"
@@ -53,19 +55,25 @@ async def playgame(ctx, *args):
             try:
                 player_msg = await ctx.fetch_message(player_id)
             except Exception:
-                await ctx.send("Can't find the message for getting list of players. Closing game")
+                await ctx.send("Can't find the message for getting list of players.")
+                await ctx.send("Closing game.")
                 return
             players = await Constants.HelperMethods.get_players(player_msg, client.user)
             try:
                 reaction_msg = await ctx.fetch_message(reaction_id)
             except Exception:
-                await ctx.send("Can't find the message for getting list of roles. Closing game.")
+                await ctx.send("Can't find the message for getting list of roles.")
+                await ctx.send("Closing game.")
                 return
             role_dict = DriverWerewolf.getRoleCounts(reaction_msg.reactions)
             role_list = Constants.HelperMethods.convert_dict_to_list(role_dict)
             await ctx.send(str(role_list))
             await ctx.send(str(players))
-            await Constants.HelperMethods.countdown(300, ctx)
+            try:
+                await DriverWerewolf.main(ctx, role_list, players, client)
+            except Exception as e:
+                await ctx.send(str(e))
+                await ctx.send("Closing game")
     elif len(args) > 0 and str(args[0]).lower() == "help":
         await ctx.send("Use &playgame to learn which games are supported")
 
@@ -78,6 +86,7 @@ async def helpgame(ctx):
 @client.event
 async def on_message(message):
     if message.author == client.user and message.content.startswith("**Roles - One Night Ultimate Werewolf"):
+        #TODO: add this under the playgame code.
         await message.add_reaction("🧍")
         await message.add_reaction("👨")
         await message.add_reaction("👩")
