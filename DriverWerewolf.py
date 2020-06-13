@@ -219,8 +219,7 @@ async def main(bot, roles_list, users, client):
     # Calculate whether the minion starting out is a werewolf (aka has to avoid being killed by village)
     minion_is_werewolf = check_minion_is_werewolf(minion_check, werewolf_check)
 
-    # There should be some code here to message all the individual players about their role now, and the
-    # description and such.
+    # message the players about their role
 
     msgs_not_accepted = []
 
@@ -231,14 +230,17 @@ async def main(bot, roles_list, users, client):
                                            + "\nReact with 👍 to continue (and if you understand).")
         await role_msg.add_reaction("👍")
         msgs_not_accepted.append((role_msg.id, p.get_user().dm_channel))
+        # If any player doesn't confirm that they got their role in 120 seconds, the game is cancelled and remade.
         try:
             await client.wait_for('reaction_add', timeout=120.0, check=Constants.HelperMethods.thumbs_up_check)
         except asyncio.TimeoutError:
             raise Exception(p.get_player_name() + " did not accept their role in time.")
+
+        # A courtesy message
         if p is not player_list[-1]:
             await p.get_user().send("Waiting for other people to accept their roles")
 
-    #TODO: make sure this code runs only when everyone has accepted their role via reaction
+    # This while loop is to "wait" for everyone to accept their role
     while len(msgs_not_accepted) > 0:
         dmtuple = msgs_not_accepted[0]
         try:
