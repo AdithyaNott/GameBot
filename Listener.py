@@ -4,7 +4,7 @@ from discord.ext import commands
 import Constants
 import DriverWerewolf
 
-DISCORD_TOKEN = "NzE3MjAwNTU1MzIzNDI0ODk4.XuRYvA.GKyDj4EoKwAm-uALRZVBe2MWZ1A"
+DISCORD_TOKEN = ""
 
 client = commands.Bot(command_prefix='&')
 
