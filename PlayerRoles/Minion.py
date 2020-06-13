@@ -19,12 +19,14 @@ class Minion(RoleCard):
                            "werewolves are, but the werewolves will not know the Minion's identity. \nAs part " \
                            "of the Werewolf faction, the Minion's goal is to make sure a werewolf does not die " \
                            "during the night phase. The Minion dying would also be a win for the Werewolf faction " \
-                           "(and in turn the player holding the Minion card) assuming there are werewolves starting."
+                           "(and in turn the player holding the Minion card) assuming there are werewolves starting.\n"\
+                           "However if there are no werewolves among players during start of night, the minion is" \
+                           " now a werewolf."
         self.loses_to_tanner = True
 
     # Iterate through player_list, see who has a Werewolf role and send that as a dm.
 
-    def do_night_action(self, player, player_list, middle_cards):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Minion role is not identified as of Player class.")
         werewolf_list = []
@@ -33,11 +35,17 @@ class Minion(RoleCard):
             if p.get_start_role().get_role_name() == "Werewolf":
                 werewolf_list.append(p.get_player_name())
         if len(werewolf_list) > 0:
-            print("You wake up as minion during the night... You see the following players are werewolves:\n",
-                  werewolf_list)
-            print("However, they do not know your identity.")
+            werewolf_string = ""
+            for w in werewolf_list:
+                werewolf_string += w
+                if w != werewolf_list[-1]:
+                    w += ", "
+            await player.get_user().send("You wake up as minion during the night... You see the following "
+                                         "players are werewolves:\n", werewolf_list)
+            await player.get_user().send("However, they do not know your identity.")
         else:
             # Well now there were no werewolves, so minion needs to just not die
-            print("You wake up as minion during the night... You see that there are no werewolves!!")
-            print("So now you are a Werewolf!")
-            print("Your new objective is to avoid dying.")
+            await player.get_user().send("You wake up as minion during the night... "
+                                         "You see that there are no werewolves!!")
+            await player.get_user().send("So now you are a Werewolf!")
+            await player.get_user().send("Your new objective is to avoid dying.")

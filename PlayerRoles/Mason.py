@@ -21,7 +21,7 @@ class Mason(RoleCard):
 
     # Iterate through player_list, see who else has a Mason role and send that as a dm.
 
-    def do_night_action(self, player, player_list, middle_cards):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Mason role is not identified as of Player class.")
         other_masons = []
@@ -32,6 +32,12 @@ class Mason(RoleCard):
                 other_masons.append(p.get_player_name())
         # First check if there are no masons besides that person.
         if len(other_masons) == 0:
-            print("You wake up around to look for other Masons.... and no one else has woken up")
+            await player.get_user().send("You wake up around to look for other Masons.... and no one else has woken up")
         else:
-            print("You wake up around to look for other Masons.... you notice the following are awake: \n", other_masons)
+            other_mason_string = ""
+            for m in other_masons:
+                other_mason_string += m
+                if m != other_masons[-1]:
+                    m += ", "
+            await player.get_user().send("You wake up around to look for other Masons.... you notice the following are "
+                                         "awake: \n", other_mason_string)

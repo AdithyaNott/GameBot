@@ -21,7 +21,7 @@ class Troublemaker(RoleCard):
 
     # The Troublemaker will select 2 other players of their choosing, and swap their current_roles
 
-    def do_night_action(self, player, player_list, middle_cards):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Troublemaker role is not identified as of Player class.")
         other_players = [p for p in player_list if p.get_player_tag() != player.get_player_tag()]

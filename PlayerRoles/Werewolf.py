@@ -24,11 +24,11 @@ class Werewolf(RoleCard):
     # The Werewolf player is informed of the other Werewolf players in the game. If there is only one Werewolf player,
     # they will get to look at a card from the center of their choosing.
 
-    def do_night_action(self, player, player_list, middle_cards):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Werewolf role is not identified as of Player class.")
         other_werewolf_list = []
-        # Todo in the future: Update this for other types of werewolves and doppleganger ofc.
+        # Todo in the future: Update this for other types of werewolves and doppelganger ofc.
         for p in player_list:
             if p.get_start_role().get_role_name() == player.get_start_role().get_role_name() and \
                     p.get_player_tag() != player.get_player_tag():

@@ -20,7 +20,7 @@ class Seer(RoleCard):
 
     # The seer chooses to look at the role of 1 other player or 2 center cards
 
-    def do_night_action(self, player, player_list, middle_cards):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Seer role is not identified as of Player class.")
         # This is a boolean which is obviously set based on user input of whether they want to look at

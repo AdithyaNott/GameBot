@@ -1,6 +1,8 @@
 from PlayerRoles.RoleCard import RoleCard
 from Constants import Faction
 from Player import Player
+import asyncio
+import random
 
 """This is the standard Drunk role in Village Faction which implements the RoleCard interface."""
 
@@ -20,12 +22,61 @@ class Drunk(RoleCard):
 
     # This action will be swapping the Player's current role with 1 from the middle (chosen by the Player).
 
-    def do_night_action(self, player, player_list, middle_cards):
-        # Some user input over here to decide which middle card to take. Basically index within
-        # middle_cards array
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+
+        # This is a check which sees that the reaction added is of 1 of the below types.
+        def check(reaction, user):
+            return str(reaction.emoji) == '1️⃣' or str(reaction.emoji) == "2️⃣" or str(reaction.emoji) == "3️⃣"
+
+        # First validate that the player is correct format
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Drunk role is not identified as of Player class.")
-        middle_role = 0  # can also be 1 or 2 since 3 middle roles are present.
+
+        # Sending message which would gather input about which role the Drunk "drunks"
+        dm_channel = player.get_user().dm_channel
+        enquiry = await player.get_user().send("As the drunk, you now must exchange one of your cards with the center. "
+                                               "Which center card would you like to select?\n"
+                                               "1️⃣ - Left Card\n2️⃣ - Middle Card\n3️⃣ - Right Card")
+        await enquiry.add_reaction("1️⃣")
+        await enquiry.add_reaction("2️⃣")
+        await enquiry.add_reaction("3️⃣")
+        automated_check = False
+        middle_role = 0
+
+        # Making sure that the player reacts within 60 seconds, else a card is randomly picked from the center for them.
+        try:
+            await client.wait_for('reaction_add', timeout=60.0, check=check)
+        except asyncio.TimeoutError:
+            await player.get_user().send("You did not complete your action in time, so you are randomly drawing a card "
+                                         "from the center.")
+            middle_role = random.randint(0, 2)
+            if middle_role == 0:
+                await player.get_user().send("By random chance, you draw the left card from the center and place your "
+                                             "role there.")
+            elif middle_role == 1:
+                await player.get_user().send("By random chance, you draw the middle card from the center and "
+                                             "place your role there.")
+            else:
+                await player.get_user().send("By random chance, you draw the right card from the center and place "
+                                             "your role there.")
+            automated_check = True
+
+        # This code is run to "wait" for a reaction to be added for 60 seconds.
+        while not automated_check:
+            enquiry = await dm_channel.fetch_message(enquiry.id)
+            for reaction in [r for r in enquiry.reactions if r.count > 1]:
+                if str(reaction) == "1️⃣":
+                    middle_role = 0
+                    await player.get_user().send("You now draw the left center card and place your role there.")
+                elif str(reaction) == "2️⃣":
+                    middle_role = 1
+                    await player.get_user().send("You now draw the middle center card and place your role there.")
+                elif str(reaction) == "3️⃣":
+                    middle_role = 2
+                    await player.get_user().send("You now draw the right center card and place your role there.")
+            break
+
+        # The main part of the code. Current role swapped with center role without revealing information to the player.
         new_middle_role = player.get_current_role()
         player.set_current_role(middle_cards[middle_role])
         middle_cards[middle_role] = new_middle_role

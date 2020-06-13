@@ -39,5 +39,5 @@ class RoleCard:
     # the order they're sitting. Maybe another Player class which has discord tag, Discord nickname, starting role,
     # and current role
 
-    def do_night_action(self, player, player_list, middle_cards):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
         pass

@@ -26,10 +26,12 @@ def validate_player_role_sizes(roles, user_list):
     # picked up via discord.py
     count = len(user_list)
 
-    # Need to verify that there are at least 3 players for a functional game.
+    # Need to verify that there are at least 3 players and at most 10 players (for now) for a functional game.
     # Commenting out the below code for now, should uncomment later.
     #if count < 3:
-    #    raise Exception("Error. Need at least 3 players to play Werewolves.")
+    #    raise Exception("Error. Need at least 3 players to play One Night Ultimate Werewolf.")
+    #if count > 10:
+    #    raise Exception("Error. One Night Ultimate Werewolf supports at most 10 players")
 
     # Validation check that there are 3 more roles than there are players
     if len(roles) != count + 3:
@@ -220,20 +222,35 @@ async def main(bot, roles_list, users, client):
     # There should be some code here to message all the individual players about their role now, and the
     # description and such.
 
-    accepted_count = 0
+    msgs_not_accepted = []
 
     for p in player_list:
         role_msg = await p.get_user().send("Your Role: " + p.get_start_role().get_role_name() + "\n" + "Description: " +
                                            p.get_start_role().get_description() + "\n" + "Faction: " +
                                            Constants.WEREWOLF_FACTION_LIST[p.get_start_role().get_faction().value]
-                                           + "\nReact with 👍 to continue.")
+                                           + "\nReact with 👍 to continue (and if you understand).")
         await role_msg.add_reaction("👍")
+        msgs_not_accepted.append((role_msg.id, p.get_user().dm_channel))
+        try:
+            await client.wait_for('reaction_add', timeout=120.0, check=Constants.HelperMethods.thumbs_up_check)
+        except asyncio.TimeoutError:
+            raise Exception(p.get_player_name() + " did not accept their role in time.")
         if p is not player_list[-1]:
             await p.get_user().send("Waiting for other people to accept their roles")
 
     #TODO: make sure this code runs only when everyone has accepted their role via reaction
+    while len(msgs_not_accepted) > 0:
+        dmtuple = msgs_not_accepted[0]
+        try:
+            dm_msg = await dmtuple[1].fetch_message(dmtuple[0])
+            for reaction in [r for r in dm_msg.reactions if r.count > 1]:
+                if str(reaction) == "👍":
+                    del msgs_not_accepted[0]
+        except Exception:
+            raise Exception("Could not retrieve role message with player: ", str(dmtuple[1].recipient))
 
     await bot.send("All players have accepted their starting role.")
+    await bot.send("Now the night phase begins")
 
     if len(player_list) == 1:
         return
@@ -252,7 +269,7 @@ async def main(bot, roles_list, users, client):
         if role in starting_roles:
             for player in player_list:
                 if player.get_start_role().get_role_name() == role:
-                    player.get_start_role().do_night_action(player, player_list, middle_roles)
+                    await player.get_start_role().do_night_action(player, player_list, middle_roles, bot, client)
 
     # Some code here to set a timer for 5 minutes after each person doing action
     await Constants.HelperMethods.countdown(300, bot)

@@ -20,7 +20,7 @@ class Robber(RoleCard):
 
     # Swaps current_role with that of another player per choosing
 
-    def do_night_action(self, player, player_list, middle_cards):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Robber role is not identified as of Player class.")
         other_players = [p for p in player_list if p.get_player_tag() != player.get_player_tag()]
