@@ -29,15 +29,13 @@ class Minion(RoleCard):
     async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Minion role is not identified as of Player class.")
-        werewolf_list = []
+
         # Todo in the future: Update this for other types of werewolves and doppleganger ofc.
-        for p in player_list:
-            if p.get_start_role().get_role_name() == "Werewolf":
-                werewolf_list.append(p.get_player_name())
+        werewolf_list = [p for p in player_list if p.get_start_role().get_role_name() == "Werewolf"]
         if len(werewolf_list) > 0:
             werewolf_string = ""
             for w in werewolf_list:
-                werewolf_string += w
+                werewolf_string += w.get_player_name()
                 if w != werewolf_list[-1]:
                     w += ", "
             await player.get_user().send("You wake up as minion during the night... You see the following "

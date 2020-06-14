@@ -24,20 +24,18 @@ class Mason(RoleCard):
     async def do_night_action(self, player, player_list, middle_cards, bot, client):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Mason role is not identified as of Player class.")
-        other_masons = []
+
         # Todo in the future: Update this for doppelganger Mason.
-        for p in player_list:
-            if p.get_player_tag() != player.get_player_tag() and p.get_start_role().get_role_name() \
-                    == player.get_start_role().get_role_name():
-                other_masons.append(p.get_player_name())
+        other_masons = [p for p in player_list if p.get_user() != player.get_user()
+                        and p.get_start_role().get_role_name() == player.get_start_role().get_role_name()]
         # First check if there are no masons besides that person.
         if len(other_masons) == 0:
-            await player.get_user().send("You wake up around to look for other Masons.... and no one else has woken up")
+            await player.get_user().send("You wake up around to look for other Masons.... and no other Masons are awake")
         else:
             other_mason_string = ""
             for m in other_masons:
-                other_mason_string += m
+                other_mason_string += m.get_player_name()
                 if m != other_masons[-1]:
                     m += ", "
-            await player.get_user().send("You wake up around to look for other Masons.... you notice the following are "
-                                         "awake: \n", other_mason_string)
+            await player.get_user().send("You wake up around to look for other Masons.... you notice the following Masons "
+                                         "are awake: ", other_mason_string)

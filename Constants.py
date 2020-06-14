@@ -8,6 +8,8 @@ import time
 POSSIBLE_ROLES = ["Drunk", "Hunter", "Insomniac", "Mason", "Minion",
                   "Robber", "Seer", "Tanner", "Troublemaker", "Villager", "Werewolf"]
 
+DIGIT_EMOJIS = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "0️⃣"]
+
 # This contains the list of roles for which there can be more than 1 present in the game.
 # Villager (for which there are at most 3)
 # Werewolf (for which there are at most 2)
