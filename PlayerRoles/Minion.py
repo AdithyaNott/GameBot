@@ -39,7 +39,7 @@ class Minion(RoleCard):
                 if w != werewolf_list[-1]:
                     w += ", "
             await player.get_user().send("You wake up as minion during the night... You see the following "
-                                         "players are werewolves:\n", werewolf_list)
+                                         "players are werewolves:\n" + werewolf_string)
             await player.get_user().send("However, they do not know your identity.")
         else:
             # Well now there were no werewolves, so minion needs to just not die

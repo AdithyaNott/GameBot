@@ -144,7 +144,7 @@ class Seer(RoleCard):
             while second_card_index == -1:
                 enquiry_msg = await dm_channel.fetch_message(enquiry_msg.id)
                 for reaction in [r for r in enquiry_msg.reactions if r.count > 1]:
-                    if first_card_index == -1 and Constants.DIGIT_EMOJIS.index(str(reaction)) < 3:
+                    if first_card_index == -1 and str(reaction) in Constants.DIGIT_EMOJIS[:3]:
                         first_card_index = Constants.DIGIT_EMOJIS.index(str(reaction))
                         other_cards_indices = [i for i in range(3) if i is not first_card_index]
                         try:
@@ -154,7 +154,7 @@ class Seer(RoleCard):
                                                          "a different random card from the center.")
                             second_card_index = random.choice(other_cards_indices)
                     elif second_card_index == -1 and \
-                            Constants.DIGIT_EMOJIS.index(str(reaction)) < 3 and \
+                            str(reaction) in Constants.DIGIT_EMOJIS[:3] and \
                             first_card_index is not Constants.DIGIT_EMOJIS.index(str(reaction)):
                         second_card_index = Constants.DIGIT_EMOJIS.index(str(reaction))
                         break

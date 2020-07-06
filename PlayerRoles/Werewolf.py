@@ -38,14 +38,10 @@ class Werewolf(RoleCard):
         other_werewolf_list = [p for p in player_list if p.get_user() != player.get_user()
                                and p.get_start_role().get_role_name() == player.get_start_role().get_role_name()]
         # Todo in the future: Update this for other types of werewolves and doppelganger ofc.
-        for p in player_list:
-            if p.get_start_role().get_role_name() == player.get_start_role().get_role_name() and \
-                    p.get_player_tag() != player.get_player_tag():
-                other_werewolf_list.append(p.get_player_name())
         if len(other_werewolf_list) > 0:
             werewolf_str = "You wake up during the night... you see that the other werewolves are the following: "
             for w in other_werewolf_list:
-                werewolf_str += w
+                werewolf_str += w.get_player_name()
                 if w is not other_werewolf_list[-1]:
                     werewolf_str += ", "
             await player.get_user().send(werewolf_str)
@@ -99,4 +95,4 @@ class Werewolf(RoleCard):
                         break
 
             card_name = middle_cards[card_index].get_role_name()
-            await player.get_user().send("You have drawn the role of the {}".format(card_index, card_name))
+            await player.get_user().send("You see the role of the {}".format(card_name))

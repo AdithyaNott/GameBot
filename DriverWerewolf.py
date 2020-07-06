@@ -1,7 +1,6 @@
 from Player import Player
 from collections import Counter
 import Constants
-import discord
 import asyncio
 import random
 from PlayerRoles.Drunk import Drunk
@@ -224,15 +223,16 @@ async def main(bot, roles_list, users, client):
     msgs_not_accepted = []
 
     for p in player_list:
-        role_msg = await p.get_user().send("Your Role: " + p.get_start_role().get_role_name() + "\n" + "Description: " +
-                                           p.get_start_role().get_description() + "\n" + "Faction: " +
+        role_msg = await p.get_user().send("**Your Role:** " + p.get_start_role().get_role_name() + "\n" + "**Description:** " +
+                                           p.get_start_role().get_description() + "\n" + "**Faction:** " +
                                            Constants.WEREWOLF_FACTION_LIST[p.get_start_role().get_faction().value]
                                            + "\nReact with 👍 to continue (and if you understand).")
         await role_msg.add_reaction("👍")
         msgs_not_accepted.append((role_msg.id, p.get_user().dm_channel))
-        # If any player doesn't confirm that they got their role in 120 seconds, the game is cancelled and remade.
+        # If any player doesn't confirm that they got their role in 60 seconds, the game is cancelled and remade.
         try:
-            await client.wait_for('reaction_add', timeout=120.0, check=Constants.HelperMethods.thumbs_up_check)
+            _, user = await client.wait_for('reaction_add', timeout=60.0, check=Constants.HelperMethods.thumbs_up_check)
+            await bot.send(user)
         except asyncio.TimeoutError:
             raise Exception(p.get_player_name() + " did not accept their role in time.")
 
@@ -240,22 +240,8 @@ async def main(bot, roles_list, users, client):
         if p is not player_list[-1]:
             await p.get_user().send("Waiting for other people to accept their roles")
 
-    # This while loop is to "wait" for everyone to accept their role
-    while len(msgs_not_accepted) > 0:
-        dmtuple = msgs_not_accepted[0]
-        try:
-            dm_msg = await dmtuple[1].fetch_message(dmtuple[0])
-            for reaction in [r for r in dm_msg.reactions if r.count > 1]:
-                if str(reaction) == "👍":
-                    del msgs_not_accepted[0]
-        except Exception:
-            raise Exception("Could not retrieve role message with player: ", str(dmtuple[1].recipient))
-
     await bot.send("All players have accepted their starting role.")
     await bot.send("Now the night phase begins")
-
-    if len(player_list) == 1:
-        return
 
     # Storing the middle classes/roles (there will be 3 exactly)
     middle_cards = roles_input[-3:].copy()
@@ -266,18 +252,66 @@ async def main(bot, roles_list, users, client):
             middle_role.update_description_tanner_clause()
         middle_roles.append(middle_role)
 
-    # Now to code each person doing their one night action
+    await bot.send("Starting Roles")
+    for p in player_list:
+        await bot.send(p.get_player_name() + " - " + p.get_start_role().get_role_name())
+
+    await bot.send("Left Middle Card - " + middle_roles[0].get_role_name())
+    await bot.send("Center Middle Card - " + middle_roles[1].get_role_name())
+    await bot.send("Right Middle Card - " + middle_roles[2].get_role_name())
+
+    # Now to make each player do their one night action in the correct order
     for role in Constants.PRIORITY:
         if role in starting_roles:
             for player in player_list:
                 if player.get_start_role().get_role_name() == role:
                     await player.get_start_role().do_night_action(player, player_list, middle_roles, bot, client)
 
-    # Some code here to set a timer for 5 minutes after each person doing action
-    await Constants.HelperMethods.countdown(300, bot)
+    await bot.send("**Roles After the Night Phase**")
+    for p in player_list:
+        await bot.send(p.get_player_name() + " - " + p.get_current_role().get_role_name())
 
-    # Now we need to handle the voting phase. Probably a list of tuples for each vote of type (Player, Player)
-    votes = [[player_list[1], player_list[0]]]
+    await bot.send("Left Middle Card - " + middle_roles[0].get_role_name())
+    await bot.send("Center Middle Card - " + middle_roles[1].get_role_name())
+    await bot.send("Right Middle Card - " + middle_roles[2].get_role_name())
+
+    vote_ids = []
+    for p in player_list:
+        other_players = [k for k in player_list if k.get_user() is not p.get_user()]
+        vote_string = "Who do you wish to shoot? Have this reaction complete before time runs out\n" \
+                      "Default (aka no vote) counts as a vote for the center"
+        for k in range(len(other_players)):
+            vote_string += "\n" + other_players[k].get_player_name() + " - " + Constants.DIGIT_EMOJIS[k]
+        vote_msg = await p.get_user().send(vote_string)
+        for k in range(len(other_players)):
+            await vote_msg.add_reaction(Constants.DIGIT_EMOJIS[k])
+        vote_ids.append([p, vote_msg.id])
+
+    # Some code here to set a timer for 5 minutes after each person doing action
+    await Constants.HelperMethods.countdown(300, bot, stop=False)
+
+    await bot.send("Countdown over")
+
+    if len(player_list) < 3:
+        return
+
+    # This will be the list of votes as a tuples of votes of the type (Player, Player)
+    votes = []
+    for vote_tuple in vote_ids:
+        p = vote_tuple[0]
+        other_players = [k for k in player_list if k.get_user() is not p.get_user()]
+        enquiry_msg = await p.get_user().dm_channel.fetch_message(vote_tuple[1])
+        vote_check = False
+        for reaction in [r for r in enquiry_msg.reactions if r.count > 1]:
+            if str(reaction) in Constants.DIGIT_EMOJIS[:len(other_players)]:
+                killed = other_players[Constants.DIGIT_EMOJIS.index(str(reaction))]
+                # append new vote. If player voted for multiple people, default is first user who has 2 votes.
+                votes.append([p, killed])
+                vote_check = True
+                break
+        if not vote_check:
+            votes.append([p, None])
+
     killed_players = get_killed_players(votes)
 
     result_message = ""

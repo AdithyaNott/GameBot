@@ -26,4 +26,4 @@ class Insomniac(RoleCard):
         current_role = player.get_current_role()
         # This will be sent as a dm obviously and such
         await player.get_user().send("You wake up during the night as the insomniac. You look at your role.... you "
-                                     "see that you are the ", current_role.get_role_name())
+                                     "see that you are the " + current_role.get_role_name())

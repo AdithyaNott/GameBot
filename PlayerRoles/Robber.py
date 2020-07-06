@@ -47,9 +47,9 @@ class Robber(RoleCard):
 
         automated_check = False
         stolen_role = -1
-        # Give 60 seconds to complete the action, else just time out
+        # Give 30 seconds to complete the action, else just time out
         try:
-            await client.wait_for('reaction_add', timeout=60.0, check=check)
+            await client.wait_for('reaction_add', timeout=30.0, check=check)
         except asyncio.TimeoutError:
             await player.get_user().send("You did not complete your action in time, so you are robbing a "
                                          "random player.")
@@ -72,4 +72,4 @@ class Robber(RoleCard):
 
         await player.get_user().send("You steal the role of " +
                                      chosen_player.get_player_name() +
-                                     " and see your new role is " + chosen_player.get_current_role())
+                                     " and see your new role is " + player.get_current_role().get_role_name())

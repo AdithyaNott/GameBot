@@ -4,7 +4,7 @@ from discord.ext import commands
 import Constants
 import DriverWerewolf
 
-DISCORD_TOKEN = ""
+DISCORD_TOKEN = "NzE3MjAwNTU1MzIzNDI0ODk4.XuZdYw.C17_f9_u07_cVicMVfeejDS9wa8"
 
 client = commands.Bot(command_prefix='&')
 
@@ -51,7 +51,6 @@ async def playgame(ctx, *args):
             await ctx.send("Game timed out, try creating game again")
             return
         else:
-            await ctx.send("Reached here")
             try:
                 player_msg = await ctx.fetch_message(player_id)
             except Exception:
@@ -67,8 +66,8 @@ async def playgame(ctx, *args):
                 return
             role_dict = DriverWerewolf.getRoleCounts(reaction_msg.reactions)
             role_list = Constants.HelperMethods.convert_dict_to_list(role_dict)
-            await ctx.send(str(role_list))
-            await ctx.send(str(players))
+            #await ctx.send(str(role_list))
+            #await ctx.send(str(players))
             try:
                 await DriverWerewolf.main(ctx, role_list, players, client)
             except Exception as e:

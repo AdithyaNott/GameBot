@@ -37,5 +37,5 @@ class Mason(RoleCard):
                 other_mason_string += m.get_player_name()
                 if m != other_masons[-1]:
                     m += ", "
-            await player.get_user().send("You wake up around to look for other Masons.... you notice the following Masons "
-                                         "are awake: ", other_mason_string)
+            await player.get_user().send("You wake up around to look for other Masons.... you notice the "
+                                         "following Masons are awake: " + other_mason_string)

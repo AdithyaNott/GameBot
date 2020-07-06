@@ -41,22 +41,42 @@ class HelperMethods:
     # This is a method to simulate a countdown via Discord message being edited.
     # t = time to countdown from. ctx = Discord Context.
     @staticmethod
-    async def countdown(t, ctx):
+    async def countdown(t, ctx, stop=False):
         if t < 0:
             raise Exception("Can't have negative amount of time. ")
         mins, secs = divmod(t, 60)
         timeformat = '{:02d}:{:02d}'.format(mins, secs)
-        msg = await ctx.send("Time remaining: " + timeformat)
-        time.sleep(1)
+        msg_text = "Time remaining: " + timeformat
+        if stop:
+            msg_text += " React with 👍 to finish the timer"
+        msg = await ctx.send(msg_text)
+        total_time = 0
+        if stop:
+            await msg.add_reaction("👍")
+            start_time = time.time()
+            msg = await ctx.fetch_message(msg.id)
+            total_time = time.time() - start_time
+            total_time *= 2
+        sleep_time = 1 - total_time
+        time.sleep(sleep_time)
         t -= 1
         while t>0:
             mins, secs = divmod(t, 60)
             timeformat = '{:02d}:{:02d}'.format(mins, secs)
-            await msg.edit(content=("Time remaining: " + timeformat))
-            time.sleep(1)
+            msg_text = "Time remaining: " + timeformat
+            if stop:
+                msg_text += " React with 👍 to finish the timer"
+            await msg.edit(content=(msg_text))
+            time.sleep(sleep_time)
             t -= 1
+            if stop:
+                msg = await ctx.fetch_message(msg.id)
+                for reaction in [r for r in msg.reactions if r.count > 1]:
+                    if str(reaction) == "👍":
+                        t = 0
+                        break
         if t == 0:
-            msg.edit(content="Time's up!")
+            await msg.edit(content="Time's up!")
 
     # Swaps the current_role attributes for 2 Players.
     # Input: player_one and player_two are two instances of the Player Object
@@ -99,4 +119,4 @@ class HelperMethods:
 
     @staticmethod
     def thumbs_up_check(reaction, user):
-        return str(reaction.emoji) == '👍'
+        return str(reaction.emoji) == '👍' and str(user) != "Board Game Bot#7938"

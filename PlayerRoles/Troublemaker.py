@@ -38,7 +38,7 @@ class Troublemaker(RoleCard):
         other_players = [p for p in player_list if p.get_user() != player.get_user()]
 
         # Some user input to choose which 2 players the Troublemaker is swapping
-        enquiry_str = "You wake up as Troublemaker. Which 2 players would you like to swap the roles of?"
+        enquiry_str = "You wake up as Troublemaker. Which 2 players would you like to swap the roles of?\n"
 
         for i in range(len(other_players)):
             enquiry_str += Constants.DIGIT_EMOJIS[i] + " - " + other_players[i].get_player_name()
@@ -65,7 +65,7 @@ class Troublemaker(RoleCard):
         while p2_index == -1:
             enquiry_msg = await dm_channel.fetch_message(enquiry_msg.id)
             for reaction in [r for r in enquiry_msg.reactions if r.count > 1]:
-                if p1_index == -1 and Constants.DIGIT_EMOJIS.index(str(reaction)) < len(other_players):
+                if p1_index == -1 and str(reaction) in Constants.DIGIT_EMOJIS[:len(other_players)]:
                     p1_index = Constants.DIGIT_EMOJIS.index(str(reaction))
                     second_players_indices = [i for i in range(3) if i is not p1_index]
                     try:
@@ -75,7 +75,7 @@ class Troublemaker(RoleCard):
                                                      "a random other player.")
                         p2_index = random.choice(second_players_indices)
                 elif p2_index == -1 and \
-                        Constants.DIGIT_EMOJIS.index(str(reaction)) < len(other_players) and \
+                        str(reaction) in Constants.DIGIT_EMOJIS[:len(other_players)] and \
                         p1_index is not Constants.DIGIT_EMOJIS.index(str(reaction)):
                     p2_index = Constants.DIGIT_EMOJIS.index(str(reaction))
                     break
