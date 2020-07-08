@@ -23,10 +23,10 @@ class Robber(RoleCard):
 
     # Swaps current_role with that of another player per choosing
 
-    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client, summary_msg):
         # This is a check which sees that the reaction added is of 1 of the below types.
         def check(reaction, user):
-            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:len(other_players)]
+            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:len(other_players)] and user != client.user
 
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Robber role is not identified as of Player class.")
@@ -56,6 +56,7 @@ class Robber(RoleCard):
             stolen_role = random.randint(0, len(other_players) - 1)
             automated_check = True
 
+
         dm_channel = player.get_user().dm_channel
         while not automated_check:
             enquiry_msg = await dm_channel.fetch_message(enquiry_msg.id)
@@ -67,9 +68,13 @@ class Robber(RoleCard):
 
         chosen_player = other_players[stolen_role]
 
+
         # Swap the roles of the 2 players
         HelperMethods.swap_roles(player_one=chosen_player, player_two=player)
 
         await player.get_user().send("You steal the role of " +
                                      chosen_player.get_player_name() +
                                      " and see your new role is " + player.get_current_role().get_role_name())
+        summary_msg += player.get_player_name() + " robbed the role of {} and saw their new role of {}\n".format(
+            chosen_player.get_player_name(), player.get_current_role().get_role_name())
+        return summary_msg

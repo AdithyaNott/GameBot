@@ -23,11 +23,11 @@ class Drunk(RoleCard):
 
     # This action will be swapping the Player's current role with 1 from the middle (chosen by the Player).
 
-    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client, summary_msg):
 
         # This is a check which sees that the reaction added is of 1 of the below types.
         def check(reaction, user):
-            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:3]
+            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:3] and user != client.user
 
         # First validate that the player is correct format
         if not isinstance(player, Player):
@@ -48,16 +48,22 @@ class Drunk(RoleCard):
         except asyncio.TimeoutError:
             await player.get_user().send("You did not complete your action in time, so you are randomly drawing a card "
                                          "from the center.")
+            summary_msg += player.get_player_name() + " did not drunk a card in time, and randomly was given a card. "
             middle_role = random.randint(0, 2)
             if middle_role == 0:
                 await player.get_user().send("By random chance, you draw the left card from the center and place your "
                                              "role there.")
+                summary_msg += player.get_player_name() + " drunk the left middle card of role " + middle_cards[0].get_role_name()
             elif middle_role == 1:
                 await player.get_user().send("By random chance, you draw the middle card from the center and "
                                              "place your role there.")
+                summary_msg += player.get_player_name() + " drunk the center middle card of role " + middle_cards[
+                    1].get_role_name()
             else:
                 await player.get_user().send("By random chance, you draw the right card from the center and place "
                                              "your role there.")
+                summary_msg += player.get_player_name() + " drunk the right middle card of role " + middle_cards[
+                    2].get_role_name()
 
         # This code is run to "wait" for a reaction to be added for 60 seconds.
         while middle_role == -1:
@@ -66,17 +72,25 @@ class Drunk(RoleCard):
                 if str(reaction) == Constants.DIGIT_EMOJIS[0]:
                     middle_role = 0
                     await player.get_user().send("You now draw the left center card and place your role there.")
+                    summary_msg += player.get_player_name() + " drunk the left middle card of role " + middle_cards[
+                        0].get_role_name()
                     break
                 elif str(reaction) == Constants.DIGIT_EMOJIS[1]:
                     middle_role = 1
                     await player.get_user().send("You now draw the middle center card and place your role there.")
+                    summary_msg += player.get_player_name() + " drunk the center middle card of role " + middle_cards[
+                        1].get_role_name()
                     break
                 elif str(reaction) == Constants.DIGIT_EMOJIS[2]:
                     middle_role = 2
                     await player.get_user().send("You now draw the right center card and place your role there.")
+                    summary_msg += player.get_player_name() + " drunk the right middle card of role " + middle_cards[
+                        2].get_role_name()
                     break
 
         # The main part of the code. Current role swapped with center role without revealing information to the player.
+        summary_msg += "\n"
         new_middle_role = player.get_current_role()
         player.set_current_role(middle_cards[middle_role])
         middle_cards[middle_role] = new_middle_role
+        return summary_msg

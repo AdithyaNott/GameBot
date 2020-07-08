@@ -19,7 +19,7 @@ async def playgame(ctx, *args):
     if len(args) == 0:
         await ctx.send("Currently I only support One Night Ultimate Werewolf. To play One Night "
                        "Ultimate Werewolf, use &playgame onuw or &playgame werewolf")
-    elif len(args) > 0 and args[0] in Constants.ONUWSTRINGS:
+    elif len(args) > 0 and str(args[0]).lower() in Constants.ONUWSTRINGS:
         await ctx.send("Now playing One Night Ultimate Werewolf.")
 
         #TODO: make this neater

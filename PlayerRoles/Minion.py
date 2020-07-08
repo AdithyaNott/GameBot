@@ -26,7 +26,7 @@ class Minion(RoleCard):
 
     # Iterate through player_list, see who has a Werewolf role and send that as a dm.
 
-    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client, summary_msg):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Minion role is not identified as of Player class.")
 
@@ -41,9 +41,12 @@ class Minion(RoleCard):
             await player.get_user().send("You wake up as minion during the night... You see the following "
                                          "players are werewolves:\n" + werewolf_string)
             await player.get_user().send("However, they do not know your identity.")
+            summary_msg += player.get_player_name() + " woke up and saw the following werewolves - " + werewolf_string + "\n"
         else:
             # Well now there were no werewolves, so minion needs to just not die
             await player.get_user().send("You wake up as minion during the night... "
                                          "You see that there are no werewolves!!")
             await player.get_user().send("So now you are a Werewolf!")
             await player.get_user().send("Your new objective is to avoid dying.")
+            summary_msg += player.get_player_name() + " woke up and saw no werewolves, so now was a werewolf.\n"
+        return summary_msg

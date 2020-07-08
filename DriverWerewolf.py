@@ -218,9 +218,9 @@ async def main(bot, roles_list, users, client):
     # Calculate whether the minion starting out is a werewolf (aka has to avoid being killed by village)
     minion_is_werewolf = check_minion_is_werewolf(minion_check, werewolf_check)
 
-    # message the players about their role
+    # message the players about their role and start creating the "Summary Message" to print at the end
 
-    msgs_not_accepted = []
+    summary_msg = ""
 
     for p in player_list:
         role_msg = await p.get_user().send("**Your Role:** " + p.get_start_role().get_role_name() + "\n" + "**Description:** " +
@@ -228,14 +228,13 @@ async def main(bot, roles_list, users, client):
                                            Constants.WEREWOLF_FACTION_LIST[p.get_start_role().get_faction().value]
                                            + "\nReact with 👍 to continue (and if you understand).")
         await role_msg.add_reaction("👍")
-        msgs_not_accepted.append((role_msg.id, p.get_user().dm_channel))
         # If any player doesn't confirm that they got their role in 60 seconds, the game is cancelled and remade.
         try:
-            _, user = await client.wait_for('reaction_add', timeout=60.0, check=Constants.HelperMethods.thumbs_up_check)
-            await bot.send(user)
+            await client.wait_for('reaction_add', timeout=60.0, check=Constants.HelperMethods.thumbs_up_check)
         except asyncio.TimeoutError:
             raise Exception(p.get_player_name() + " did not accept their role in time.")
 
+        summary_msg += p.get_player_name() + " got the role of " + p.get_start_role().get_role_name() + ".\n"
         # A courtesy message
         if p is not player_list[-1]:
             await p.get_user().send("Waiting for other people to accept their roles")
@@ -252,28 +251,17 @@ async def main(bot, roles_list, users, client):
             middle_role.update_description_tanner_clause()
         middle_roles.append(middle_role)
 
-    await bot.send("Starting Roles")
-    for p in player_list:
-        await bot.send(p.get_player_name() + " - " + p.get_start_role().get_role_name())
-
-    await bot.send("Left Middle Card - " + middle_roles[0].get_role_name())
-    await bot.send("Center Middle Card - " + middle_roles[1].get_role_name())
-    await bot.send("Right Middle Card - " + middle_roles[2].get_role_name())
+    summary_msg += "The left middle card was " + middle_roles[0].get_role_name() + "\n"
+    summary_msg += "The center middle card was " + middle_roles[1].get_role_name() + "\n"
+    summary_msg += "The right middle card was " + middle_roles[2].get_role_name() + "\n"
 
     # Now to make each player do their one night action in the correct order
     for role in Constants.PRIORITY:
         if role in starting_roles:
             for player in player_list:
                 if player.get_start_role().get_role_name() == role:
-                    await player.get_start_role().do_night_action(player, player_list, middle_roles, bot, client)
-
-    await bot.send("**Roles After the Night Phase**")
-    for p in player_list:
-        await bot.send(p.get_player_name() + " - " + p.get_current_role().get_role_name())
-
-    await bot.send("Left Middle Card - " + middle_roles[0].get_role_name())
-    await bot.send("Center Middle Card - " + middle_roles[1].get_role_name())
-    await bot.send("Right Middle Card - " + middle_roles[2].get_role_name())
+                    summary_msg = await player.get_start_role().\
+                        do_night_action(player, player_list, middle_roles, bot, client, summary_msg)
 
     vote_ids = []
     for p in player_list:
@@ -286,6 +274,8 @@ async def main(bot, roles_list, users, client):
         for k in range(len(other_players)):
             await vote_msg.add_reaction(Constants.DIGIT_EMOJIS[k])
         vote_ids.append([p, vote_msg.id])
+
+    await bot.send(summary_msg)
 
     # Some code here to set a timer for 5 minutes after each person doing action
     await Constants.HelperMethods.countdown(300, bot, stop=False)
@@ -339,7 +329,7 @@ async def main(bot, roles_list, users, client):
             if killed != killed_players[-1]:
                 result_message += killed.get_player_name() + ", "
             else:
-                result_message+= killed.get_player_name() + "\n"
+                result_message += killed.get_player_name() + "\n"
             if killed.get_current_role().get_faction() == Constants.Faction.WEREWOLF:
                 if killed.get_current_role().get_role_name() != "Minion":
                     werewolf_win = False

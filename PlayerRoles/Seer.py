@@ -23,18 +23,18 @@ class Seer(RoleCard):
 
     # The seer chooses to look at the role of 1 other player or 2 center cards
 
-    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client, summary_msg):
         # A check for reaction 1 or 2, for whether user wishes to see 2 center cards or another player's card
         def check_choice(reaction, user):
-            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:2]
+            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:2] and user != client.user
 
         # A check for in event of another player's card, adds an appropriate reaction for selecting one of them
         def other_player_check(reaction, user):
-            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:len(other_players)]
+            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:len(other_players)] and user != client.user
 
         # A check for in event of 2 center cards, picks an emoji reaction of 1 to 3
         def first_card_check(reaction, user):
-            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:3]
+            return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:3] and user != client.user
 
         # A check for in event of 2 center cards and 1 is already picked, picks an emoji 1 to 3 that isn't
         # already picked
@@ -58,12 +58,11 @@ class Seer(RoleCard):
         # This is whether seer wishes to see another player's role or not
         check_player = True
 
-        # Give 60 seconds to complete the action, else just time out
+        # Give 60 seconds to complete the action of deciding whether to see 2 center or 1 player, else just time out
+        # and make random decision
         try:
             await client.wait_for('reaction_add', timeout=60.0, check=check_choice)
         except asyncio.TimeoutError:
-            await player.get_user().send("You did not complete your action in time, so you are robbing a "
-                                         "random player.")
             check_player = random.choice([True, False])
             if check_player:
                 await player.get_user().send("You did not make your decision in time, so you randomly choose "
@@ -119,6 +118,8 @@ class Seer(RoleCard):
             chosen_player_role = chosen_player.get_current_role().get_role_name()
             await player.get_user().send("You look at the role of {}..... you see that their role is "
                                          "{}".format(chosen_player.get_player_name(), chosen_player_role))
+            summary_msg += player.get_player_name() + " saw the role of {} and saw their role was " \
+                                                      "{}.\n".format(chosen_player.get_player_name(), chosen_player_role)
         else:
             enquiry_str = "Which 2 cards do you wish to look at?\n"
             enquiry_str += Constants.DIGIT_EMOJIS[0] + " - Left Card\n"
@@ -161,14 +162,20 @@ class Seer(RoleCard):
 
             final_str1 = "You look at the following 2 cards from the center: "
             final_str2 = "You see the following roles respectively: "
+            summary_msg += player.get_player_name() + " chose to see 2 random roles from the center: "
             if first_card_index == 0 or second_card_index == 0:
                 final_str1 += "Left Card "
                 final_str2 += middle_cards[0].get_role_name() + " "
+                summary_msg += "Left Center Card - " + middle_cards[0].get_role_name() + " "
             if first_card_index == 1 or second_card_index == 1:
                 final_str1 += "Middle Card "
                 final_str2 += middle_cards[1].get_role_name() + " "
+                summary_msg += "Middle Center Card - " + middle_cards[1].get_role_name() + " "
+
             if first_card_index == 2 or second_card_index == 2:
                 final_str1 += "Right Card"
                 final_str2 += middle_cards[2].get_role_name()
+                summary_msg += "Right Center Card - " + middle_cards[2].get_role_name() + " "
             await player.get_user().send(final_str1 + "\n" + final_str2)
-
+            summary_msg += "\n"
+        return summary_msg

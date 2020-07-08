@@ -24,7 +24,7 @@ class Troublemaker(RoleCard):
 
     # The Troublemaker will select 2 other players of their choosing, and swap their current_roles
 
-    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client, summary_msg):
         # A check for seeing that the 1st player to "troublemake" is selected
         def first_card_check(reaction, user):
             return str(reaction.emoji) in Constants.DIGIT_EMOJIS[:len(other_players)]
@@ -83,5 +83,7 @@ class Troublemaker(RoleCard):
         player_one = other_players[p1_index]
         player_two = other_players[p2_index]
         HelperMethods.swap_roles(player_one=player_one, player_two=player_two)
+        summary_msg += player.get_player_name() + " swapped the roles of {} and {}\n".format(player_one.get_player_name(), player_two.get_player_name())
         await player.get_user().send("You've swapped the roles of {} and {}".format
                                      (player_one.get_player_name(), player_two.get_player_name()))
+        return summary_msg

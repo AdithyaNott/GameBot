@@ -20,10 +20,12 @@ class Insomniac(RoleCard):
 
     # Gets to look at their current role during the night
 
-    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client, summary_msg):
         if not isinstance(player, Player):
             raise Exception("Error: A person who drew the Insomniac role is not identified as of Player class.")
         current_role = player.get_current_role()
         # This will be sent as a dm obviously and such
         await player.get_user().send("You wake up during the night as the insomniac. You look at your role.... you "
                                      "see that you are the " + current_role.get_role_name())
+        summary_msg += player.get_player_name() + " woke up and saw their current role as " + current_role.get_role_name() + ".\n"
+        return summary_msg

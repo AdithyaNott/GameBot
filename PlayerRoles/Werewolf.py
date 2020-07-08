@@ -27,7 +27,7 @@ class Werewolf(RoleCard):
     # The Werewolf player is informed of the other Werewolf players in the game. If there is only one Werewolf player,
     # they will get to look at a card from the center of their choosing.
 
-    async def do_night_action(self, player, player_list, middle_cards, bot, client):
+    async def do_night_action(self, player, player_list, middle_cards, bot, client, summary_msg):
 
         # This is a check which sees that the reaction added is of 1 of the below types.
         def check(reaction, user):
@@ -95,4 +95,16 @@ class Werewolf(RoleCard):
                         break
 
             card_name = middle_cards[card_index].get_role_name()
+            if card_index == 0:
+                summary_msg += "{} woke up and saw no other werewolves. " \
+                               "They looked at the left center card and saw {} role.\n".format(player.get_player_name(), card_name)
+            elif card_index == 1:
+                summary_msg += "{} woke up and saw no other werewolves. " \
+                               "They looked at the middle center card and saw {} role.\n".format(player.get_player_name(),
+                                                                                               card_name)
+            else:
+                summary_msg += "{} woke up and saw no other werewolves. " \
+                               "They looked at the right center card and saw {} role.\n".format(player.get_player_name(),
+                                                                                               card_name)
             await player.get_user().send("You see the role of the {}".format(card_name))
+        return summary_msg
